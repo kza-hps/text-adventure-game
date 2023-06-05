@@ -40,6 +40,26 @@ class Object:
         # code to interact with the object
         pass
 
+# Integrate GPT-3
+
+def generate_response(prompt):
+    response = openai.Completion.create(
+        engine="davinci",
+        prompt=prompt,
+        temperature=0.5,
+        max_tokens=1024,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+
+    return response.choices[0].text.strip()
+
+def generate_description(obj):
+    prompt = f"Describe {obj.name}."
+    return generate_response(prompt)
+
+
 # Define game functions
 def start_game():
     """
