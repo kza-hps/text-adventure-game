@@ -1,9 +1,19 @@
 # Import necessary libraries
 import openai
 import random
+import os
 
 # Set up OpenAI API credentials
-openai.api_key = "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"
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+class Room:
+    def __init__(self, name, description):
+        self.name = name
+        self.description = description
+        self.connected_rooms = {}
+
+    def connect_room(self, direction, room):
+        self.connected_rooms[direction] = room
 
 class Player:
     def __init__(self):
@@ -11,8 +21,10 @@ class Player:
         self.inventory = []
 
     def move(self, direction):
-        # code to move the player to a new room based on the direction given
-        pass
+        if direction in self.current_room.connected_rooms:
+            self.current_room = self.current_room.connected_rooms[direction]
+        else:
+            print("There's no room in that direction.")
 
     def interact(self, obj):
         # code to interact with an object in the virtual world
@@ -24,12 +36,10 @@ class VirtualWorld:
         self.objects = []
 
     def add_room(self, room):
-        # code to add a room to the virtual world
-        pass
+        self.rooms.append(room)
 
     def add_object(self, obj):
-        # code to add an object to the virtual world
-        pass
+        self.objects.append(obj)
 
 class Object:
     def __init__(self, name, description):
@@ -39,8 +49,6 @@ class Object:
     def interact(self):
         # code to interact with the object
         pass
-
-# Integrate GPT-3
 
 def generate_response(prompt):
     response = openai.Completion.create(
@@ -59,50 +67,34 @@ def generate_description(obj):
     prompt = f"Describe {obj.name}."
     return generate_response(prompt)
 
+def play_game():
+    player = Player()
+    world = VirtualWorld()
 
-# Define game functions
-def start_game():
-    """
-    Function that initiates the game and sets up the virtual environment
-    """
+    # Set up the virtual world
+    room1 = Room("Room 1", "A dimly lit room.")
+    room2 = Room("Room 2", "A room with a large window.")
+    room1.connect_room("north", room2)
+    room2.connect_room("south", room1)
+    
+    world.add_room(room1)
+    world.add_room(room2)
+    
+    player.current_room = room1  # Player starts in room1
 
-    # Set up virtual environment
-    print("The world is your oyster. What do you want to do?")
-
-    # Start game loop
     while True:
-        user_input = input("> ")
-        generate_response(user_input)
-
-def generate_response(user_input):
-    """
-    Function that generates responses and descriptions based on user input
-    """
-
-    # Define prompt for OpenAI API
-    prompt = "You are in a virtual world. " + user_input + ". What happens next?"
-
-    # Call OpenAI API to generate response
-    response = openai.Completion.create(
-        engine="davinci",
-        prompt=prompt,
-        temperature=0.5,
-        max_tokens=100,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0
-    )
-
-    # Print generated response
-    print(response.choices[0].text)
+        print("You are in", player.current_room.name)
+        print(generate_description(player.current_room))
+        
+        command = input("> ")
+        
+        if command in ["north", "south", "east", "west"]:
+            player.move(command)
+        else:
+            print(generate_response(command))
 
 def main():
-    """
-    Main function that calls the start_game function
-    """
+    play_game()
 
-    start_game()
-
-# Call main function
 if __name__ == "__main__":
     main()
