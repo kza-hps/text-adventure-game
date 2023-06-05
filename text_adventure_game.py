@@ -24,10 +24,11 @@ class Player:
         if direction in self.current_room.connected_rooms:
             self.current_room = self.current_room.connected_rooms[direction]
         else:
-            print("There's no room in that direction.")
+            print("You can't go that way.")
 
     def interact(self, obj):
         # code to interact with an object in the virtual world
+        # you can add more details here depending on the game logic
         pass
 
 class VirtualWorld:
@@ -48,6 +49,7 @@ class Object:
 
     def interact(self):
         # code to interact with the object
+        # you can add more details here depending on the game logic
         pass
 
 def generate_response(prompt):
@@ -86,15 +88,31 @@ def play_game():
         print("You are in", player.current_room.name)
         print(generate_description(player.current_room))
         
-        command = input("> ")
+        command = input("> ").split()
         
-        if command in ["north", "south", "east", "west"]:
-            player.move(command)
+        action = command[0].lower()
+        if action == "move":
+            if len(command) > 1:
+                player.move(command[1])
+            else:
+                print("Which direction do you want to move?")
+        elif action == "interact":
+            if len(command) > 1:
+                # Assuming the object is in the same room as the player
+                object_name = " ".join(command[1:])
+                obj = next((o for o in world.objects if o.name == object_name), None)
+                if obj:
+                    player.interact(obj)
+                else:
+                    print("That object doesn't exist in this room.")
+            else:
+                print("What do you want to interact with?")
         else:
-            print(generate_response(command))
+            print("I don't understand that command.")
 
 def main():
     play_game()
 
 if __name__ == "__main__":
     main()
+
